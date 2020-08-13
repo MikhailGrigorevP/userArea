@@ -10,11 +10,17 @@ class User:
         self.__zoneCount = 0  # count of available zones for user
 
     # getters
+    def getId(self):
+        return f'{self.__id}'
+
     def getLat(self):
         return self.__lat
 
     def getLon(self):
         return self.__lon
+
+    def getZoneCount(self):
+        return f'{self.__zoneCount}'
 
     # setters
     def addZone(self):
@@ -81,6 +87,7 @@ def readZoneData():
     return zones
 
 
+# I think, i shouldn't use border of zone as an available area
 def isUserInZone(userLat, userLon, zoneLat, zoneLon):
     isIn = 0
     for i in range(len(zoneLat)):
@@ -93,15 +100,20 @@ def isUserInZone(userLat, userLon, zoneLat, zoneLon):
     return isIn
 
 
+def out(users):
+    print("id,number_of_places_available")
+    with open('result.csv', 'w') as csvfile:
+        fieldnames = ['id', 'number_of_places_available']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for user in users:
+            print(user.getId() + ',' + user.getZoneCount())
+            writer.writerow(({'id': user.getId(), 'number_of_places_available': user.getZoneCount()}))
+
+
 def main():
     users = readUserData()
-    for user in users:
-        print(user)
-    print("\n")
     zones = readZoneData()
-    #   for zone in zones:
-    #       print(zone)
-    print("\n == analyzing zones ==\n")
 
     for user in users:
         userLat = user.getLat()
@@ -111,9 +123,8 @@ def main():
             zoneLon = zone.getLon()
             if isUserInZone(userLat, userLon, zoneLat, zoneLon):
                 user.addZone()
-    for user in users:
-        print(user)
-    print("\n")
+
+    out(users)
 
 
 if __name__ == '__main__':
