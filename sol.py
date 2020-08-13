@@ -1,6 +1,9 @@
 import csv
 
 
+# I used OOP to make code user-friendly and some additional algorithms because
+# I can't sure in correctness of all data in your csv files: in general, in data order
+
 # user class
 class User:
     def __init__(self, user_id, user_latitude, user_longitude):
@@ -60,13 +63,18 @@ def readUserData():
             if line_count == 0:  # for naming line
                 line_count += 1
             else:
-                users.append(User(int(row[0]), float(row[1]), float(row[2])))
+                #   checking wrong data
+                if len(row) == 3:
+                    users.append(User(int(row[0]), float(row[1]), float(row[2])))
+                else:
+                    print(f"Wrong user data at line {line_count + 1}")
                 line_count += 1
     return users
 
 
 def readZoneData():
     zones = []  # for all zones after grouping by id
+    # I use dict in dict to make all vertexes in correct order
     d = dict()  # for all zones
     with open('place_zone_coordinates.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -75,15 +83,31 @@ def readZoneData():
             if line_count == 0:  # for naming line
                 line_count += 1
             else:
-                if row[0] in d:  # add another vertex to zone
-                    d[row[0]][0].append(float(row[1]))
-                    d[row[0]][1].append(float(row[2]))
-                else:   # add new zone by id
-                    d[row[0]] = [[float(row[1])], [float(row[2])]]
+                #   checking wrong data
+                if len(row) == 4:
+                    if row[0] in d:  # add another vertex to zone
+                        # d[row[0]][0].append(float(row[1]))
+                        # d[row[0]][1].append(float(row[2]))
+                        d[row[0]][int(row[3])] = [float(row[1]), float(row[2])]
+                    else:   # add new zone by id
+                        d[row[0]] = dict()
+                        d[row[0]][int(row[3])] = [float(row[1]), float(row[2])]
+                        # d[row[0]] = [[float(row[1])], [float(row[2])]]
+                else:
+                    print(f"Wrong zone data at line {line_count + 1}")
                 line_count += 1
 
     for _d in d.keys():  # zones to list of classes
-        zones.append(Zone(int(_d), d.get(_d)[0], d.get(_d)[1]))
+        #   checking wrong zones (lines, for example)
+        if len(d.get(_d).keys()) > 2:
+            lat = []
+            lon = []
+            for coord in d.get(_d).keys():
+                lat.append(d[_d][coord][0])
+                lon.append(d[_d][coord][1])
+            zones.append(Zone(int(_d), lat, lon))
+        else:
+            print(f"Incorrect zone with {len(d.get(_d)[0])} vertexes with id: {_d}")
     return zones
 
 
